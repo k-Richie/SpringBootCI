@@ -1,0 +1,194 @@
+Parameters:
+  MyKeyPairName:
+    Type: String
+  MyImageId:
+    Type: String
+  ExportVpcStackName:
+    Type: String
+  InstanceType:
+    Type: String
+  SSHLocation:
+   Type: String
+  EnvironmentName:
+    Type: String
+
+Resources:
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP access via port 80
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '0'
+          ToPort: '61000'
+          SourceSecurityGroupId: !Ref ELBWebServerSecurityGroup
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp:
+            Ref: SSHLocation
+      VpcId: 
+        Fn::ImportValue: 
+               !Sub ${ExportVpcStackName}-VPC
+
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-WebServerSg"
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: EC2InstanceProfile
+      Path: /
+      Roles: 
+       - !Ref 'EC2Role'
+
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com 
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+       - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      Path: /
+      Policies:
+        - PolicyName: ecs-service
+          PolicyDocument:
+           Statement:
+            - Effect: Allow
+              Action:
+               - 'ecs:CreateCluster'
+               - 'ecs:DeregisterContainerInstance'
+               - 'ecs:DiscoverPollEndpoint'
+               - 'ecs:Poll'
+               - 'ecs:RegisterContainerInstance'
+               - 'ecs:StartTelemetrySession'
+               - 'ecs:Submit*'
+               - 'logs:CreateLogStream'
+               - 'logs:PutLogEvents'
+               - 'ecr:GetAuthorizationToken'
+               - 'ecr:BatchGetImage'
+               - 'ecr:GetDownloadUrlForLayer'
+              Resource: '*'
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-EC2Role"
+
+  AsgLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub ${AWS::StackName}-launch-template
+      LaunchTemplateData:
+        CreditSpecification:
+          CpuCredits: Unlimited
+        ImageId: !Ref MyImageId
+        IamInstanceProfile:
+          Arn: !GetAtt EC2InstanceProfile.Arn
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref MyKeyPairName
+        Monitoring:
+          Enabled: True
+        SecurityGroupIds:
+         - !Ref WebServerSecurityGroup
+        UserData:
+          Fn::Base64: !Sub
+          - |
+            #!/bin/bash
+            mkdir /etc/ecs
+            echo "ECS_CLUSTER=spring" >> /etc/ecs/ecs.config
+          - {
+            }
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub "${EnvironmentName}-AsgLaunchTemplate"
+  ApplicationAsg:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: ApplicationAsg
+      MinSize: '1'
+      MaxSize: '3'
+      DesiredCapacity: '2'
+      HealthCheckGracePeriod: 100
+      LaunchTemplate:
+        LaunchTemplateId: !Ref AsgLaunchTemplate
+        Version: !GetAtt AsgLaunchTemplate.LatestVersionNumber
+      VPCZoneIdentifier:
+           - Fn::ImportValue: !Sub ${ExportVpcStackName}-PrivateSubnet1
+           - Fn::ImportValue: !Sub ${ExportVpcStackName}-PrivateSubnet2
+
+  ELBWebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP access via port 80
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '0'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+      VpcId: 
+         Fn::ImportValue: 
+               !Sub ${ExportVpcStackName}-VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-ELBWebServerSg"
+
+  LoadBalancer:
+    Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    Properties:
+      Name: MyLoadBalancer
+      Scheme: "internet-facing"
+      Type: "application"
+      Subnets:
+        - Fn::ImportValue: !Sub ${ExportVpcStackName}-PublicSubnet1
+        - Fn::ImportValue: !Sub ${ExportVpcStackName}-PublicSubnet2
+      SecurityGroups:
+        - !Ref ELBWebServerSecurityGroup 
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-LoadBalancer"
+
+  DummyTargetGroupPublic:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Name: !Join ['-', [!Ref 'AWS::StackName', 'drop-1']]
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: 
+         Fn::ImportValue: 
+               !Sub ${ExportVpcStackName}-VPC
+
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn:
+      - LoadBalancer
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref 'DummyTargetGroupPublic'
+          Type: 'forward'
+      LoadBalancerArn: !Ref 'LoadBalancer'
+      Port: 80
+      Protocol: HTTP
+
+Outputs:
+  PublicListener:
+    Export:
+       Name: !Sub ${AWS::StackName}-PublicListener
+    Value: !Ref LoadBalancerListener
+
+  WebServerSecurityGroup:
+    Export:
+       Name: !Sub ${AWS::StackName}-WebServerSecurityGroup
+    Value: !Ref WebServerSecurityGroup
+

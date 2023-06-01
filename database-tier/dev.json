@@ -1,0 +1,42 @@
+[
+  {
+    "ParameterKey": "ExportVpcStackName",
+    "ParameterValue": "landing-zone"
+  },
+  {
+    "ParameterKey": "DBInstanceIdentifier",
+    "ParameterValue": "mysqldb"
+  },
+  {
+    "ParameterKey": "DBName",
+    "ParameterValue": "applicationdb"
+  },
+  {
+    "ParameterKey": "DBAllocatedStorage",
+    "ParameterValue": "20"
+  },
+  {
+    "ParameterKey": "DBInstanceClass",
+    "ParameterValue": "db.t2.small"
+  },
+  {
+    "ParameterKey": "MultiAZ",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "DBEngine",
+    "ParameterValue": "MYSQL"
+  },
+  {
+    "ParameterKey": "DBEngineVersion",
+    "ParameterValue": "8.0.32"
+  },
+  {
+    "ParameterKey": "ExportAsgStackName",
+    "ParameterValue":"ecs-asg"
+  },
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue":"dev"
+  }
+]

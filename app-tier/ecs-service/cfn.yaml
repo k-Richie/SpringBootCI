@@ -1,0 +1,159 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy a service into an ECS cluster behind a public load balancer.
+Parameters:
+  ExportVpcStackName:
+    Type: String
+  ExportAsgStackName:
+    Type: String
+  ServiceName:
+    Type: String
+  ImageUrl:
+    Type: String
+  ContainerPort:
+    Type: Number
+  Path:
+    Type: String
+  Priority:
+    Type: Number
+  DesiredCount:
+    Type: Number
+  Profile:
+    Type: String
+  DBNAME:
+    Type: String
+  DBPORT:
+    Type: Number
+  EnvironmentName:
+    Type: String
+  LogGroupName:
+    Type: String
+
+Resources:
+  MyECSTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: MyECSTaskExecutionRolePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - arn:aws:ssm:*:*:parameter/*
+                  - arn:aws:logs:*:*:log-group:*
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Ref LogGroupName
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-LogGroup"
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: spring
+      NetworkMode: bridge
+      RequiresCompatibilities:
+          - EC2
+      Cpu: 1024
+      Memory: 1024
+      TaskRoleArn: !Ref MyECSTaskExecutionRole
+      ExecutionRoleArn: !Ref MyECSTaskExecutionRole
+      ContainerDefinitions:
+        - Name: !Ref 'ServiceName'
+          Image: !Ref 'ImageUrl'
+          PortMappings: 
+             - ContainerPort: !Ref ContainerPort
+               Protocol: tcp
+          LogConfiguration:
+            LogDriver: 'awslogs'
+            Options:
+               awslogs-group: !Ref LogGroup
+               awslogs-region: !Ref AWS::Region
+               awslogs-stream-prefix: !Ref 'ServiceName'
+          Secrets:
+            - Name: DB_USERNAME
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/masterusername
+            - Name: DB_PASSWORD
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/masterpassword
+            - Name: "DB_ENDPOINT"
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/dbendpoint
+          Environment:
+          - Name: "DB_NAME"
+            Value: !Ref DBNAME
+          - Name: "DB_PORT"
+            Value: !Ref DBPORT
+          - Name: "SPRING_PROFILES_ACTIVE"
+            Value: !Ref Profile
+      Tags:
+          - Key: Name
+            Value: !Sub "${EnvironmentName}-TaskDefinition"
+      
+  Service:
+    Type: AWS::ECS::Service
+    DependsOn: LoadBalancerRule
+    Properties:
+      ServiceName: !Ref 'ServiceName'
+      Cluster: '{{resolve:ssm:ecs-cluster:1}}'
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 75
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref 'TaskDefinition'
+      LoadBalancers:
+        - ContainerName: !Ref 'ServiceName'
+          ContainerPort: !Ref ContainerPort
+          TargetGroupArn: !Ref TargetGroup
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-Service"
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: "/swagger-ui.html"
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Name: !Ref 'ServiceName'
+      Port: 8090
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId:
+        Fn::ImportValue: 
+               !Sub ${ExportVpcStackName}-VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-TargetGroup"
+
+  LoadBalancerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'TargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          Values: [!Ref 'Path']
+      ListenerArn:
+        Fn::ImportValue: 
+               !Sub ${ExportAsgStackName}-PublicListener
+      Priority: !Ref 'Priority'
+
+  

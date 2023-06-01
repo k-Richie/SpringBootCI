@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: creates an RDS database with MYSQL engine.
+  
+Parameters:
+  ExportVpcStackName:
+    Type: String
+
+  ExportAsgStackName:
+    Type: String
+    Default: ecs-asg
+    
+  DBInstanceIdentifier:
+    Type: String
+
+  DBName:
+    Type: String
+
+  DBAllocatedStorage:
+    Type: Number
+
+  DBInstanceClass:
+    Type: String
+
+  MultiAZ:
+    Type: String
+
+  DBEngine:
+    Type: String
+
+  DBEngineVersion:
+    Type: String
+
+  EnvironmentName:
+    Type: String
+  
+Resources:
+  DatabasesSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for RDS database
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${ExportVpcStackName}-RDSPrivateSubnet1
+        - Fn::ImportValue: !Sub ${ExportVpcStackName}-RDSPrivateSubnet2
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-DatabasesubnetGroup"
+
+  DataBaseSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Open database for access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '3306'
+          ToPort: '3306'
+          SourceSecurityGroupId: 
+             Fn::ImportValue: 
+                    !Sub ${ExportAsgStackName}-WebServerSecurityGroup
+      VpcId: 
+          Fn::ImportValue: 
+               !Sub ${ExportVpcStackName}-VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-DataBaseSg"
+
+  DatabaseInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: !Ref DBAllocatedStorage
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      DBInstanceClass: !Ref DBInstanceClass
+      DBInstanceIdentifier: !Ref DBInstanceIdentifier
+      DBName: !Ref DBName
+      MasterUserPassword: '{{resolve:ssm:masterpassword:1}}'
+      DBSubnetGroupName: !Ref DatabasesSubnetGroup
+      Engine: !Ref DBEngine
+      EngineVersion: !Ref DBEngineVersion
+      MasterUsername: '{{resolve:ssm:masterusername:1}}'
+      MultiAZ: !Ref MultiAZ
+      PubliclyAccessible: false
+      VPCSecurityGroups: 
+        - !Ref DataBaseSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-DatabaseInstance"
+
+  EndpointParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: dbendpoint
+      Type: String
+      Value: !GetAtt DatabaseInstance.Endpoint.Address
+      Tier: Standard
+      Description: SSM Parameter
+
+
+   
+    
+  
+

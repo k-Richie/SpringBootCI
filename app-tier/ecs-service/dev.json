@@ -1,0 +1,60 @@
+[
+  {
+    "ParameterKey": "ExportVpcStackName",
+    "ParameterValue": "landing-zone"
+  },
+  {
+    "ParameterKey": "ExportAsgStackName",
+    "ParameterValue": "ecs-asg"
+  },
+  {
+    "ParameterKey": "ServiceName",
+    "ParameterValue": "springboot"
+  },
+  {
+    "ParameterKey": "ImageUrl",
+    "ParameterValue": "864543196770.dkr.ecr.us-east-1.amazonaws.com/springapp4:a74dd73"
+  },
+  {
+    "ParameterKey": "ContainerPort",
+    "ParameterValue": "8090"
+  },
+  {
+    "ParameterKey": "Path",
+    "ParameterValue": "*"
+  },
+  {
+    "ParameterKey": "Priority",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "DesiredCount",
+    "ParameterValue": "2"
+  },
+  {
+    "ParameterKey": "Role",
+    "ParameterValue": "ecsTaskExecutionRole"
+  },
+  {
+    "ParameterKey": "Profile",
+    "ParameterValue": "mysql"
+  },
+  {
+    "ParameterKey": "DBNAME",
+    "ParameterValue": "applicationdb"
+  },
+  {
+    "ParameterKey": "DBPORT",
+    "ParameterValue": "3306"
+  },
+  {
+    "ParameterKey": "LogGroupName",
+    "ParameterValue":"my-log"
+  },
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue":"dev"
+  }
+]
+
+

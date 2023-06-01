@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  EnvironmentName:
+    Type: String
+    # Default: dev
+Resources:
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: '{{resolve:ssm:ecs-cluster:1}}'
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-Cluster"
+
+
+      

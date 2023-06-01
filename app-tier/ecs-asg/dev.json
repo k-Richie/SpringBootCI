@@ -1,0 +1,29 @@
+[
+  {
+    "ParameterKey": "MyKeyPairName",
+    "ParameterValue": "ec2"
+  },
+  {
+    "ParameterKey": "MyImageId",
+    "ParameterValue": "ami-090310a05d8eae025"
+  },
+  {
+    "ParameterKey": "ExportVpcStackName",
+    "ParameterValue": "landing-zone"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t3.large"
+  },
+  {
+    "ParameterKey": "SSHLocation",
+    "ParameterValue": "0.0.0.0/0"
+  },
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue":"dev"
+  }
+]
+
+
+
