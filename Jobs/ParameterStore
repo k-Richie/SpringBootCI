@@ -22,9 +22,8 @@ pipeline {
 
                     script { 
                     def stackNames = ['ParaStore']
-                    def jobName = '${JOB_NAME}'
-                    //  def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
-                        def commitMessage = 'ParaStore'
+
+                     def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
                      if (commitMessage == stackNames[0]) {
                      withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS CRED', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
 
