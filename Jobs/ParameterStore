@@ -45,7 +45,7 @@ pipeline {
                      }
                      }
                      else {
-                        echo "Skipping deployment because the commit message does not match the stackTier Name."
+                        echo "Skipping deployment because the commit message does not match the stackTier name."
                     
                     }
                 }
