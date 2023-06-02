@@ -33,9 +33,9 @@ pipeline {
                                 script {
 
                                   if (fileExists("${stackName}/dev.json")){
-                                    sh "aws cloudformation deploy --template-file ${stackName}/cfn.yaml --parameter-overrides file://${stackName}/dev.json  --stack-name ${stackName} --capabilities CAPABILITY_NAMED_IAM --region us-east-1 --tags JobName=${JOB_NAME}"
+                                    sh "aws cloudformation deploy --template-file ${stackName}/cfn.yaml --parameter-overrides file://${stackName}/dev.json  --stack-name ${stackName} --capabilities CAPABILITY_NAMED_IAM --region $AWS_REGION --tags JobName=${JOB_NAME}"
                                   }else {
-                                    sh "aws cloudformation deploy --template-file ${stackName}/cfn.yaml --stack-name ${stackName} --region us-east-1 --capabilities CAPABILITY_NAMED_IAM --tags JobName=${JOB_NAME}"
+                                    sh "aws cloudformation deploy --template-file ${stackName}/cfn.yaml --stack-name ${stackName} --region $AWS_REGION --capabilities CAPABILITY_NAMED_IAM --tags JobName=${JOB_NAME}"
                                   }
                               }
   
