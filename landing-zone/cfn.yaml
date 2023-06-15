@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-Description: vpc with public and private subnets 
+Description: vpc with public and private subnet
 
 Parameters:
   VpcCidr:
