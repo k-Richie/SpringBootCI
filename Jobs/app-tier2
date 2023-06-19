@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+    
+    environment {
+        AWS_REGION = "us-east-1"
+    }
+
+    stages {
+        stage('clean workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+        stage('Checkout') {
+            steps {
+                git branch: 'main', credentialsId: 'credential-ssh', url: 'git@github.com:k-Richie/SpringBootCI.git'
+            }
+        }
+        
+        stage('Create or Update Stack') {
+            steps {
+
+                    script {
+                    def TierName   = 'app-tier'
+                     def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
+                    // def commitMessage = 'app-tier'
+                    if (commitMessage == TierName) {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS CRED', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                    def stackNames = ['ecs-cluster', 'ecs-asg', 'ecs-service']
+                     stackNames.each { stackName ->
+                        stage("Deploy ${stackName} Stack") {
+                                
+                                script {
+
+                                  if (fileExists("${TierName}/${stackName}/dev.json")){
+                                    sh "aws cloudformation deploy --template-file ${TierName}/${stackName}/cfn.yaml --parameter-overrides file://${TierName}/${stackName}/dev.json  --stack-name ${stackName} --capabilities CAPABILITY_NAMED_IAM --region $AWS_REGION --tags JobName=${JOB_NAME}"
+                                  }else {
+                                    sh "aws cloudformation deploy --template-file ${TierName}/${stackName}/cfn.yaml --stack-name ${stackName} --region $AWS_REGION --capabilities CAPABILITY_NAMED_IAM --tags JobName=${JOB_NAME}"
+                                  }
+                                // echo "HELLO MAN"
+                               }
+                    
+                            }
+                        } 
+                        
+                     }  
+                }
+                else {
+                        echo "Skipping deployment because the commit message does not contain the job name."
+                    }
+            }
+        }
+    }
+}
+}
