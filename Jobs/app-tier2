@@ -26,6 +26,7 @@ pipeline {
         
          stage('Build_App ') {
             steps {
+                script {
                 def commitMessage = 'app'
                 if(commitMessage == "app"){
                 dir('app'){
@@ -34,8 +35,10 @@ pipeline {
             }
         }
      }
+}
         stage('Building Image') {
             steps {
+                script {
                  def commitMessage = 'app'
                 if(commitMessage == "app"){
                 dir('app'){
@@ -44,8 +47,10 @@ pipeline {
             }
         }
 }
+}
         stage('Push') {
             steps {
+                script {
                 def commitMessage = 'app'
                 if(commitMessage == "app"){
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS CRED', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
@@ -57,6 +62,7 @@ pipeline {
                 }
             }
         }
+    }
         stage('Update ecs ParameterFile'){
             steps{
                 dir('app-tier'){
