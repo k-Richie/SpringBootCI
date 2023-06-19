@@ -66,9 +66,9 @@ pipeline {
 }
         stage('Update ecs ParameterFile'){
             steps{
-                dir('app-tier'){
+                dir('app-tier/ecs-service'){
                 
-                sh 'sed -i "s#\\"ParameterValue\\": \\"658694789184.dkr.ecr.us-east-1.amazonaws.com/springapp3:as3erds4d\\"#\\"ParameterValue\\": \\"658694789184.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPO_NAME:${Commit_Id}\\"#" ${TierName}/${serviceName}/dev.json'
+                sh 'sed -i "s#\\"ParameterValue\\": \\"658694789184.dkr.ecr.us-east-1.amazonaws.com/springapp3:as3erds4d\\"#\\"ParameterValue\\": \\"658694789184.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPO_NAME:${Commit_Id}\\"#" dev.json'
                 }
             }
         }
