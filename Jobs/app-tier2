@@ -62,7 +62,7 @@ pipeline {
                     script {
                    // def TierName   = 'app-tier'
                     // def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
-                     def commitMessage = 'app'
+                     
                     if (commitMessage == TierName || commitMessage == "ecs-service" || commitMessage == "app") {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS CRED', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     def stackNames = ['ecs-cluster', 'ecs-asg', 'ecs-service']
