@@ -3,6 +3,9 @@ pipeline {
     
     environment {
         AWS_REGION = "us-east-1"
+        $ECR_REPO_NAME = "springapp3"
+        $TierName = "app-tier"
+        $serviceName "ecs-service"
     }
 
     stages {
@@ -16,6 +19,7 @@ pipeline {
                 git branch: 'main', credentialsId: 'credential-ssh', url: 'git@github.com:k-Richie/SpringBootCI.git'
             }
         }
+        if(commitMessage == "app"){
          stage('Build_App ') {
             steps {
                 dir('app'){
@@ -34,28 +38,30 @@ pipeline {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS CRED', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     dir('app'){
-                        sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 864543196770.dkr.ecr.us-east-1.amazonaws.com"
-                        sh 'docker tag $ECR_REPO_NAME 864543196770.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPO_NAME:${GIT_COMMIT}'
-                        sh 'docker push 864543196770.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPO_NAME:${GIT_COMMIT}'
+                        sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 658694789184.dkr.ecr.us-east-1.amazonaws.com"
+                        sh 'docker tag $ECR_REPO_NAME 658694789184.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPO_NAME:${GIT_COMMIT}'
+                        sh 'docker push 658694789184.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPO_NAME:${GIT_COMMIT}'
                     }
                 }
             }
         }
         stage('Update ecs ParameterFile'){
             steps{
-                dir('ecs-service'){
-                sh 'sed -i "s#\\"ParameterValue\\": \\"url\\"#\\"ParameterValue\\": \\"864543196770.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPO_NAME:${Commit_Id}\\"#" dev.json'
+                dir('app-tier'){
+                
+                sh 'sed -i "s#\\"ParameterValue\\": \\"658694789184.dkr.ecr.us-east-1.amazonaws.com/springapp3:as3erds4d\\"#\\"ParameterValue\\": \\"658694789184.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPO_NAME:${Commit_Id}\\"#" ${TierName}/${serviceName}/dev.json'
                 }
             }
         }
+}
         stage('Create or Update Stack') {
             steps {
 
                     script {
-                    def TierName   = 'app-tier'
-                     def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
-                    // def commitMessage = 'app-tier'
-                    if (commitMessage == TierName) {
+                   // def TierName   = 'app-tier'
+                    // def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
+                     def commitMessage = 'app'
+                    if (commitMessage == TierName || commitMessage == "ecs-service" || commitMessage == "app") {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS CRED', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     def stackNames = ['ecs-cluster', 'ecs-asg', 'ecs-service']
                      stackNames.each { stackName ->
