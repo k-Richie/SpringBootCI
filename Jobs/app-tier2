@@ -6,7 +6,7 @@ pipeline {
         ECR_REPO_NAME = "springapp3"
         TierName = "app-tier"
         serviceName = "ecs-service"
-        commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
+        // commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
         GIT_COMMIT = "newest"
     }
 
