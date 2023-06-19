@@ -19,6 +19,8 @@ pipeline {
                 git branch: 'main', credentialsId: 'credential-ssh', url: 'git@github.com:k-Richie/SpringBootCI.git'
             }
         }
+        // def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
+        def commitMessage = 'app'
         if(commitMessage == "app"){
          stage('Build_App ') {
             steps {
