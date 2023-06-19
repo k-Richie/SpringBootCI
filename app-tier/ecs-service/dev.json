@@ -13,7 +13,7 @@
   },
   {
     "ParameterKey": "ImageUrl",
-    "ParameterValue": "url"
+    "ParameterValue": "658694789184.dkr.ecr.us-east-1.amazonaws.com/springapp3:as3erds4d"
   },
   {
     "ParameterKey": "ContainerPort",
