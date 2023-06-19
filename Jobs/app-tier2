@@ -72,7 +72,7 @@ pipeline {
                 }
             }
         }
-}
+
         stage('Create or Update Stack') {
             steps {
 
