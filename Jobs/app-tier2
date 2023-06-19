@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         AWS_REGION = "us-east-1"
-        ECR_REPO_NAME = "springapp3"
+        ECR_REPO_NAME = "springapp4"
         TierName = "app-tier"
         serviceName = "ecs-service"
         // commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
