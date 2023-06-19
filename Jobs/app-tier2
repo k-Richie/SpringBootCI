@@ -3,9 +3,9 @@ pipeline {
     
     environment {
         AWS_REGION = "us-east-1"
-        $ECR_REPO_NAME = "springapp3"
-        $TierName = "app-tier"
-        $serviceName = "ecs-service"
+        ECR_REPO_NAME = "springapp3"
+        TierName = "app-tier"
+        serviceName = "ecs-service"
     }
 
     stages {
