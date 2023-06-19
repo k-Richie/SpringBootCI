@@ -72,7 +72,7 @@ Resources:
       RequiresCompatibilities:
           - EC2
       Cpu: 1024
-      Memory: 1024
+      Memory: 2048
       TaskRoleArn: !Ref MyECSTaskExecutionRole
       ExecutionRoleArn: !Ref MyECSTaskExecutionRole
       ContainerDefinitions:
