@@ -28,7 +28,7 @@ pipeline {
             steps {
                 script {
                 def commitMessage = 'app'
-                if(commitMessage == "app"){
+                if(commitMessage == "ap"){
                 dir('app'){
                     sh "mvn clean package"
                 }
@@ -40,7 +40,7 @@ pipeline {
             steps {
                 script {
                  def commitMessage = 'app'
-                if(commitMessage == "app"){
+                if(commitMessage == "ap"){
                 dir('app'){
                     sh 'docker build -t $ECR_REPO_NAME .'
                 }
@@ -52,7 +52,7 @@ pipeline {
             steps {
                 script {
                 def commitMessage = 'app'
-                if(commitMessage == "app"){
+                if(commitMessage == "ap"){
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS CRED', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     dir('app'){
                         sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 658694789184.dkr.ecr.us-east-1.amazonaws.com"
@@ -66,13 +66,17 @@ pipeline {
 }
         stage('Update ecs ParameterFile'){
             steps{
+                script {
+                def commitMessage = 'app'
+                if(commitMessage == "app"){
                 dir('app-tier/ecs-service'){
                 
                 sh 'sed -i "s#\\"ParameterValue\\": \\"658694789184.dkr.ecr.us-east-1.amazonaws.com/springapp3:as3erds4d\\"#\\"ParameterValue\\": \\"658694789184.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPO_NAME:${Commit_Id}\\"#" dev.json'
                 }
             }
         }
-
+}
+}
         stage('Create or Update Stack') {
             steps {
 
