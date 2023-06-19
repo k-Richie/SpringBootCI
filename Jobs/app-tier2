@@ -6,6 +6,8 @@ pipeline {
         ECR_REPO_NAME = "springapp3"
         TierName = "app-tier"
         serviceName = "ecs-service"
+        commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
+        GIT_COMMIT = "newest"
     }
 
     stages {
@@ -19,25 +21,33 @@ pipeline {
                 git branch: 'main', credentialsId: 'credential-ssh', url: 'git@github.com:k-Richie/SpringBootCI.git'
             }
         }
-        // def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
-        def commitMessage = 'app'
-        if(commitMessage == "app"){
+        
+       
+        
          stage('Build_App ') {
             steps {
+                def commitMessage = 'app'
+                if(commitMessage == "app"){
                 dir('app'){
                     sh "mvn clean package"
                 }
             }
         }
+     }
         stage('Building Image') {
             steps {
+                 def commitMessage = 'app'
+                if(commitMessage == "app"){
                 dir('app'){
                     sh 'docker build -t $ECR_REPO_NAME .'
                 }
             }
         }
+}
         stage('Push') {
             steps {
+                def commitMessage = 'app'
+                if(commitMessage == "app"){
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS CRED', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     dir('app'){
                         sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 658694789184.dkr.ecr.us-east-1.amazonaws.com"
