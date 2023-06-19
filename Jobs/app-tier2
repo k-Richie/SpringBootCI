@@ -68,7 +68,7 @@ pipeline {
             steps{
                 script {
                 def commitMessage = 'app'
-                if(commitMessage == "app"){
+                if(commitMessage == "ap"){
                 dir('app-tier/ecs-service'){
                 
                 sh 'sed -i "s#\\"ParameterValue\\": \\"658694789184.dkr.ecr.us-east-1.amazonaws.com/springapp3:as3erds4d\\"#\\"ParameterValue\\": \\"658694789184.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPO_NAME:${Commit_Id}\\"#" dev.json'
