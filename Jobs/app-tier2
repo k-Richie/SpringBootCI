@@ -7,7 +7,7 @@ pipeline {
         TierName = "app-tier"
         serviceName = "ecs-service"
         // commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
-        GIT_COMMIT = "newest"
+        GIT_COMMIT = "oldest"
     }
 
     stages {
@@ -28,7 +28,7 @@ pipeline {
             steps {
                 script {
                 def commitMessage = 'app'
-                if(commitMessage == "ap"){
+                if(commitMessage == "app"){
                 dir('app'){
                     sh "mvn clean package"
                 }
@@ -40,7 +40,7 @@ pipeline {
             steps {
                 script {
                  def commitMessage = 'app'
-                if(commitMessage == "ap"){
+                if(commitMessage == "app"){
                 dir('app'){
                     sh 'docker build -t $ECR_REPO_NAME .'
                 }
@@ -52,7 +52,7 @@ pipeline {
             steps {
                 script {
                 def commitMessage = 'app'
-                if(commitMessage == "ap"){
+                if(commitMessage == "app"){
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS CRED', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     dir('app'){
                         sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 658694789184.dkr.ecr.us-east-1.amazonaws.com"
