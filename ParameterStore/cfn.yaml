@@ -28,7 +28,6 @@ Resources:
   # VpcIdParameter:
   #   Type: AWS::SSM::Parameter
   #   Properties:
-  #     Name: myvpc
   #     Value: '10.1.0.0/16'
   #     Tier: Standard
 
