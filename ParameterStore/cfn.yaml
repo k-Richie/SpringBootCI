@@ -64,7 +64,6 @@ Resources:
   # RDSPrivateSubnet1Parameter:
   #   Type: AWS::SSM::Parameter
   #   Properties:
-  #     Name: RDSPrivateSubnet1
   #     Type: String
   #     Value: '10.1.4.0/24'
   #     Tier: Standard
