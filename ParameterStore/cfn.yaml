@@ -29,7 +29,6 @@ Resources:
   #   Type: AWS::SSM::Parameter
   #   Properties:
   #     Name: myvpc
-  #     Type: String
   #     Value: '10.1.0.0/16'
   #     Tier: Standard
 
