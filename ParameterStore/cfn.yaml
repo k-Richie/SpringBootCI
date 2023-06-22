@@ -34,7 +34,6 @@ Resources:
   # PublicSubnet1Parameter:
   #   Type: AWS::SSM::Parameter
   #   Properties:
-  #     Name: PublicSubnet
   #     Value: '10.1.0.0/24'
   #     Tier: Standard
 
