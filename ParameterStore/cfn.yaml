@@ -47,7 +47,7 @@ Resources:
   # PrivateSubnet1Parameter:
   #   Type: AWS::SSM::Parameter
   #   Properties:
-  #     Name: PrivateSubnet1
+  #     Name: PrivateSubnet
   #     Type: String
   #     Value: '10.1.2.0/24'
   #     Tier: Standard
