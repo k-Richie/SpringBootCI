@@ -106,7 +106,7 @@ pipeline {
                      }  
                 }
                 else {
-                        echo "Skipping deployment because the commit message does not contain the job name."
+                        echo "Skipping deployment because the commit messages does not contain the job name."
                     }
             }
         }
