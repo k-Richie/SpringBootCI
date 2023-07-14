@@ -39,7 +39,7 @@ pipeline {
                                   }else {
                                     sh "aws cloudformation deploy --template-file ${stackName}/cfn.yaml --stack-name ${stackName} --region $AWS_REGION --capabilities CAPABILITY_NAMED_IAM --tags JobName=${JOB_NAME}"
                                   }
-                                // echo "HELLO MAM"
+                            
                               }
                         
                                 
