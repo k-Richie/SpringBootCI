@@ -41,7 +41,7 @@ Resources:
       DBSubnetGroupDescription: Subnet group for RDS database
       SubnetIds:
         - Fn::ImportValue: !Sub ${ExportVpcStackName}-RDSPrivateSubnet1
-        - Fn::ImportValue: !Sub ${ExportVpcStackName}-RDSPrivateSubnet2
+        - Fn::ImportValue: !Sub ${ExportVpcStackName}-PrivateSubnet1
       Tags:
         - Key: Name
           Value: !Sub "${EnvironmentName}-DatabasesubnetGroup"
