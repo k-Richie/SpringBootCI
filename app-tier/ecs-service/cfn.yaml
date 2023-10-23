@@ -101,6 +101,18 @@ Resources:
             Value: !Ref DBPORT
           - Name: "SPRING_PROFILES_ACTIVE"
             Value: !Ref Profile
+            
+        - Name: amazon-ssm-agent
+          Image: public.ecr.aws/amazon-ssm-agent/amazon-ssm-agent:latest
+          LogConfiguration:
+            LogDriver: 'awslogs'
+            Options:
+               awslogs-group: /ecs/ecs-fis-td
+               awslogs-region: !Ref AWS::Region
+               awslogs-stream-prefix: ecs
+          Environment:
+          - Name: "MANAGED_INSTANCE_ROLE_NAME"
+            Value: Managed_Instance_Core_Policy
       Tags:
           - Key: Name
             Value: !Sub "${EnvironmentName}-TaskDefinition"
